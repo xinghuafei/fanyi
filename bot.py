@@ -1,9 +1,10 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from deep_translator import GoogleTranslator
+from googletrans import Translator
 import os
 
 BOT_TOKEN = "8081127120:AAGheAHP7SeEdvZU1cjGas_zk-G3v3ukYVA"
 
+translator = Translator()
 auto_translate_on = {}
 
 def start(update, context):
@@ -24,23 +25,21 @@ def handle_message(update, context):
         return
 
     text = update.message.text
-
     try:
-        # 检测语言
-        detected = GoogleTranslator(source='auto', target='zh-cn').detect(text)
-
-        # 中文 → 英文
+        detected = translator.detect(text).lang
+        # 中文 -> 英文
         if detected in ['zh-cn', 'zh-tw']:
-            translated = GoogleTranslator(source='auto', target='en').translate(text)
-            update.message.reply_text(f"🌍 翻译：{translated}")
-        # 英文或韩文 → 中文
+            translated = translator.translate(text, dest='en')
+        # 英文或韩文 -> 中文
         elif detected in ['en', 'ko']:
-            translated = GoogleTranslator(source='auto', target='zh-cn').translate(text)
-            update.message.reply_text(f"🌍 翻译：{translated}")
+            translated = translator.translate(text, dest='zh-cn')
         else:
             update.message.reply_text("⚠️ 暂不支持该语言。")
+            return
+
+        update.message.reply_text(f"🌍 翻译：{translated.text}")
     except Exception as e:
-        update.message.reply_text("❌ 翻译失败，暂不支持。")
+        update.message.reply_text("❌ 翻译失败，请稍后重试。")
 
 def main():
     updater = Updater(BOT_TOKEN, use_context=True)
