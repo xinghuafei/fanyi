@@ -2,9 +2,11 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from googletrans import Translator
 import os
 
-BOT_TOKEN = "8081127120:AAGheAHP7SeEdvZU1cjGas_zk-G3v3ukYVA"
+BOT_TOKEN = "8081127120:AAGheAHP7SeEdvZU1cjGas_zk-G3v3ukYVA"  # ✅ 建议环境变量方式
 
-translator = Translator()
+translator = Translator(service_urls=[
+    'translate.googleapis.com'  # ✅ 强制使用官方接口
+])
 auto_translate_on = {}
 
 def start(update, context):
@@ -25,15 +27,18 @@ def handle_message(update, context):
         return
 
     text = update.message.text
-    src_lang = translator.detect(text).lang
+    try:
+        src_lang = translator.detect(text).lang
+        print(f"[DEBUG] 检测语言: {src_lang}，原文: {text}")
 
-    if src_lang == 'zh-cn' or src_lang == 'zh-tw':
-        dest_lang = 'en'
-    else:
-        dest_lang = 'zh-cn'
+        dest_lang = 'en' if src_lang.startswith('zh') else 'zh-cn'
+        translated = translator.translate(text, dest=dest_lang)
 
-    translated = translator.translate(text, dest=dest_lang)
-    update.message.reply_text(f"🌍 翻译：{translated.text}")
+        print(f"[DEBUG] 翻译结果: {translated.text}")
+        update.message.reply_text(f"🌍 翻译：{translated.text}")
+    except Exception as e:
+        print(f"[ERROR] 翻译失败：{e}")
+        update.message.reply_text("❌ 翻译失败，请稍后重试。")
 
 def main():
     updater = Updater(BOT_TOKEN, use_context=True)
