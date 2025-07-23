@@ -1,12 +1,9 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 import os
 
-BOT_TOKEN = "8081127120:AAGheAHP7SeEdvZU1cjGas_zk-G3v3ukYVA"  # ✅ 建议环境变量方式
+BOT_TOKEN = "8081127120:AAGheAHP7SeEdvZU1cjGas_zk-G3v3ukYVA"
 
-translator = Translator(service_urls=[
-    'translate.googleapis.com'  # ✅ 强制使用官方接口
-])
 auto_translate_on = {}
 
 def start(update, context):
@@ -27,16 +24,23 @@ def handle_message(update, context):
         return
 
     text = update.message.text
-    try:
-        src_lang = translator.detect(text).lang
 
-        # 只翻译英文或韩语
-        if src_lang in ['en', 'ko']:
-            dest_lang = 'zh-cn'
-            translated = translator.translate(text, dest=dest_lang)
-            update.message.reply_text(f"🌍 翻译：{translated.text}")
+    try:
+        # 检测语言
+        detected = GoogleTranslator(source='auto', target='zh-cn').detect(text)
+
+        # 中文 → 英文
+        if detected in ['zh-cn', 'zh-tw']:
+            translated = GoogleTranslator(source='auto', target='en').translate(text)
+            update.message.reply_text(f"🌍 翻译：{translated}")
+        # 英文或韩文 → 中文
+        elif detected in ['en', 'ko']:
+            translated = GoogleTranslator(source='auto', target='zh-cn').translate(text)
+            update.message.reply_text(f"🌍 翻译：{translated}")
+        else:
+            update.message.reply_text("⚠️ 暂不支持该语言。")
     except Exception as e:
-        update.message.reply_text(f"❌ 暂不支持，翻译失败。")
+        update.message.reply_text("❌ 翻译失败，暂不支持。")
 
 def main():
     updater = Updater(BOT_TOKEN, use_context=True)
