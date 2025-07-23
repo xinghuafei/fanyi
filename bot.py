@@ -26,20 +26,18 @@ def handle_message(update, context):
 
     text = update.message.text
     try:
-        detected = translator.detect(text).lang
-        # 中文 -> 英文
-        if detected in ['zh-cn', 'zh-tw']:
-            translated = translator.translate(text, dest='en')
-        # 英文或韩文 -> 中文
-        elif detected in ['en', 'ko']:
-            translated = translator.translate(text, dest='zh-cn')
-        else:
-            update.message.reply_text("⚠️ 暂不支持该语言。")
-            return
+        detected = GoogleTranslator(source='auto', target='zh-cn').detect(text).lower()
 
-        update.message.reply_text(f"🌍 翻译：{translated.text}")
+        # 只翻译 英文 和 韩文
+        if detected in ['en', 'ko']:
+            translated = GoogleTranslator(source='auto', target='zh-cn').translate(text)
+            update.message.reply_text(f"🌍 翻译：{translated}")
+        else:
+            # 中文等其它语言：不翻译，不提示
+            pass
     except Exception as e:
         update.message.reply_text("❌ 翻译失败，请稍后重试。")
+
 
 def main():
     updater = Updater(BOT_TOKEN, use_context=True)
