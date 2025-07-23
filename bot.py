@@ -3,7 +3,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from googletrans import Translator
 
 translator = Translator()
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = "8081127120:AAhYSUIQzsLmbysfCXw8GkPqW4kT8-z8x_Y"
 group_config = {}
 
 def start(update, context):
