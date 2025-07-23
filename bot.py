@@ -29,16 +29,14 @@ def handle_message(update, context):
     text = update.message.text
     try:
         src_lang = translator.detect(text).lang
-        print(f"[DEBUG] 检测语言: {src_lang}，原文: {text}")
 
-        dest_lang = 'en' if src_lang.startswith('zh') else 'zh-cn'
-        translated = translator.translate(text, dest=dest_lang)
-
-        print(f"[DEBUG] 翻译结果: {translated.text}")
-        update.message.reply_text(f"🌍 翻译：{translated.text}")
+        # 只翻译英文或韩语
+        if src_lang in ['en', 'ko']:
+            dest_lang = 'zh-cn'
+            translated = translator.translate(text, dest=dest_lang)
+            update.message.reply_text(f"🌍 翻译：{translated.text}")
     except Exception as e:
-        print(f"[ERROR] 翻译失败：{e}")
-        update.message.reply_text("❌ 翻译失败，请稍后重试。")
+        update.message.reply_text(f"❌ 暂不支持，翻译失败。")
 
 def main():
     updater = Updater(BOT_TOKEN, use_context=True)
